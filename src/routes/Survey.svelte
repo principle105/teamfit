@@ -1,6 +1,6 @@
 <script lang="ts">
     import { invalidateAll } from "$app/navigation";
-    import { surveyQuestions } from "$lib/surveyQuestions";
+    import { surveyQuestions } from "$lib/data";
     import type { User } from "$lib/types";
     import toast from "svelte-french-toast";
 

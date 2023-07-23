@@ -4,11 +4,19 @@
     import toast from "svelte-french-toast";
     import TextEditor from "./TextEditor.svelte";
     import type Quill from "quill";
+    import { badges } from "$lib/data";
+    import type { Badge } from "$lib/data";
+    import IoIosGift from "svelte-icons/io/IoIosGift.svelte";
 
     export let user: User;
 
+    interface BadgeInfo extends Badge {
+        quantity: number;
+    }
+
     let friend: Friend | null = null;
     let posts: Post[] = [];
+    let badgeInfo: BadgeInfo[] = [];
 
     onMount(async () => {
         if (user.friend === null) {
@@ -96,36 +104,70 @@
 
         return allPosts;
     };
+
+    const sortBadges = (): BadgeInfo[] => {
+        // Count the number of each badge that the user has
+        const badgeCounts = user.badges.reduce(
+            (acc: { [key: string]: number }, badge) => {
+                if (acc[badge] === undefined) {
+                    acc[badge] = 1;
+                } else {
+                    acc[badge]++;
+                }
+
+                return acc;
+            },
+            {}
+        );
+
+        // Getting the badge information and quantity for each badge and sorting by price
+        let badgeInfo: (BadgeInfo | null)[] = Object.keys(badgeCounts).map(
+            (badgeName) => {
+                const badge = badges.find((b) => b.name === badgeName);
+
+                if (badge === undefined) return null;
+
+                return {
+                    ...badge,
+                    quantity: badgeCounts[badgeName],
+                };
+            }
+        );
+
+        // Removing null values
+        badgeInfo = badgeInfo.filter((b) => b !== null);
+
+        return badgeInfo as BadgeInfo[];
+    };
+
+    $: user.badges, (badgeInfo = sortBadges());
 </script>
 
 <h2 class="text-5xl">Dashboard</h2>
 
-<section>
-    <h2 class="text-2xl">Your Badges</h2>
-</section>
-
-<div class="flex justify-between gap-10">
-    <section class="bg-white py-8 lg:py-16 grow">
+<div class="flex justify-between gap-10 mt-10 flex-col md:flex-row">
+    <section class="grow order-last md:order-none">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-lg lg:text-2xl text-gray-900">
-                Progress Reports ({user.posts.length})
-            </h2>
+            <h2 class="text-lg lg:text-2xl text-gray-900">Your Feed</h2>
         </div>
         <div class="mb-3">
             <TextEditor bind:quill={editor} />
         </div>
         <button
-            class="inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-blue-700 rounded-lg focus:ring-4 focus:ring-blue-200 hover:bg-blue-800"
+            class="inline-flex items-center py-2.5 px-4 text-sm font-medium text-center text-white bg-blue-700 rounded-lg focus:ring-4 focus:ring-blue-200 hover:bg-blue-800 mb-4"
             on:click={postProgressUpdate}
         >
             Post Update
         </button>
 
         {#if friend === null}
-            <p>Sorry you don't have friend yet hahha</p>
-        {:else}
-            {#each posts as post, index}
-                {@const author = user.id === post.userId ? user : friend}
+            <p class="text-red-600">
+                Warning: You have not been paired with a partner yet
+            </p>
+        {/if}
+        {#each posts as post, index}
+            {@const author = user.id === post.userId ? user : friend}
+            {#if author !== null}
                 <article
                     class="p-6 mb-6 text-base bg-white rounded-lg {index !==
                         0 && 'border-t border-gray-200'}"
@@ -222,12 +264,65 @@
                             >
                             Reply
                         </button>
+                        <button
+                            type="button"
+                            class="flex items-center text-sm text-gray-500 hover:underline gap-0.5"
+                        >
+                            <div class="h-4 w-4 mb-1">
+                                <IoIosGift />
+                            </div>
+                            Gift Badge
+                        </button>
                     </div>
                 </article>
-            {/each}
-        {/if}
+            {/if}
+        {/each}
     </section>
-    <section class="p-4">
-        <img src={user.image} alt="{user.firstName}'s Profile" />
+    <section>
+        <div
+            class="p-5 md:p-8 bg-zinc-50 border border-zinc-200 text-zinc-90 rounded-md"
+        >
+            <img
+                src={user.image}
+                alt="{user.firstName}'s Profile"
+                class="w-full h-36 md:h-52 rounded-md object-cover"
+            />
+            <h3 class="text-xl mt-2.5 font-medium">
+                {user.firstName}
+                {user.lastName}
+            </h3>
+            <!-- Points and badges display -->
+            <div class="flex justify-between my-4">
+                <div>
+                    <p class="font-medium text-sm">Points</p>
+                    <p class="text-lg">{user.points}</p>
+                </div>
+                <div>
+                    <p class="font-medium text-sm">Posts</p>
+                    <p class="text-lg">{user.posts.length}</p>
+                </div>
+            </div>
+            <div>
+                <p class="font-medium text-sm mb-1">Badges Received</p>
+                {#if badgeInfo.length === 0}
+                    <p class="text-sm text-gray-500">
+                        You have not received any badges yet
+                    </p>
+                {:else}
+                    <ul class="flex gap-3">
+                        {#each badgeInfo as badge}
+                            <li class="relative">
+                                <div class="text-4xl">{badge.icon}</div>
+                                <div
+                                    class="absolute bottom-0 right-0 text-[0.6rem] px-1.5 py-0.5 rounded-sm bg-blue-500 text-white"
+                                >
+                                    {badge.quantity}
+                                </div>
+                            </li>
+                        {/each}
+                    </ul>
+                {/if}
+            </div>
+        </div>
     </section>
 </div>

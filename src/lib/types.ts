@@ -21,6 +21,8 @@ export interface User {
     friend: string | null;
     surveyCompleted: boolean;
     posts: Post[];
+    points: number;
+    badges: string[];
 }
 
 export interface DatabaseUser extends User {

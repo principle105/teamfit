@@ -4,6 +4,12 @@ interface Question {
     options: string[];
 }
 
+export interface Badge {
+    name: string;
+    icon: string;
+    price: number;
+}
+
 // TODO: Add actual questions
 export const surveyQuestions: Question[] = [
     {
@@ -65,5 +71,68 @@ export const surveyQuestions: Question[] = [
         shortName: "Availability",
         prompt: "What time of day do you prefer to exercise?",
         options: ["Morning", "Afternoon", "Evening", "Anytime"],
+    },
+];
+
+export const badges: Badge[] = [
+    {
+        name: "Thumb Up",
+        icon: "👍",
+        price: 3,
+    },
+    {
+        name: "Firework",
+        icon: "🎆",
+        price: 5,
+    },
+    {
+        name: "Golden Star",
+        icon: "⭐️",
+        price: 15,
+    },
+    {
+        name: "Trophy",
+        icon: "🏆",
+        price: 20,
+    },
+    {
+        name: "Superhero Cape",
+        icon: "🦸‍♂️",
+        price: 25,
+    },
+    {
+        name: "Diamond",
+        icon: "💎",
+        price: 30,
+    },
+    {
+        name: "Rainbow",
+        icon: "🌈",
+        price: 35,
+    },
+    {
+        name: "Angel Wings",
+        icon: "👼",
+        price: 40,
+    },
+    {
+        name: "Crown",
+        icon: "👑",
+        price: 45,
+    },
+    {
+        name: "Rocket",
+        icon: "🚀",
+        price: 50,
+    },
+    {
+        name: "Crystal Ball",
+        icon: "🔮",
+        price: 55,
+    },
+    {
+        name: "Dragon",
+        icon: "🐉",
+        price: 60,
     },
 ];

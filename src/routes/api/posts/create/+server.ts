@@ -23,6 +23,9 @@ export const POST: RequestHandler = async ({ request }) => {
             $push: {
                 posts: post,
             },
+            $inc: {
+                points: 5,
+            },
         }
     );
 
