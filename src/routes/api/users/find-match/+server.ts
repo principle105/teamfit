@@ -36,21 +36,23 @@ export const GET: RequestHandler = async ({ url: { searchParams } }) => {
     let usersWithSharedGoals = users.map((user) => {
         user = user as DatabaseUser;
 
-        let matchingGoals: string[] = [];
+        let commonGoals: string[] = [];
 
         for (const key in user.goals) {
             if (user.goals[key] === currentUser.goals[key]) {
-                matchingGoals.push(key);
+                commonGoals.push(key);
             }
         }
 
-        if (matchingGoals.length > 0) {
+        if (commonGoals.length > 0) {
             return {
                 id: user._id.toString(),
-                name: user.name,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                description: user.description,
                 image: user.image,
                 goals: user.goals,
-                matchingGoals: matchingGoals,
+                commonGoals: commonGoals,
             } as Friend;
         }
 
@@ -59,19 +61,6 @@ export const GET: RequestHandler = async ({ url: { searchParams } }) => {
 
     // Removing null values
     usersWithSharedGoals = usersWithSharedGoals.filter((user) => user !== null);
-
-    // Ordering by most matches
-    let sortedUsers = (usersWithSharedGoals as Friend[]).sort((a, b) => {
-        if (a.matchingGoals.length > b.matchingGoals.length) {
-            return -1;
-        }
-        if (a.matchingGoals.length < b.matchingGoals.length) {
-            return 1;
-        }
-        return 0;
-    });
-
-    // Getting the top 6 users
 
     if (usersWithSharedGoals.length === 0) {
         return new Response(
@@ -84,9 +73,33 @@ export const GET: RequestHandler = async ({ url: { searchParams } }) => {
         );
     }
 
+    // Ordering by most matches
+    let sortedUsers = (usersWithSharedGoals as Friend[]).sort((a, b) => {
+        if (a.commonGoals.length > b.commonGoals.length) {
+            return -1;
+        }
+        if (a.commonGoals.length < b.commonGoals.length) {
+            return 1;
+        }
+        return 0;
+    });
+
+    // Finding the best match
+    const match = sortedUsers[0];
+
+    // Updating both users' friend field
+    await usersCollection.updateOne(
+        { _id: new ObjectId(userId) },
+        { $set: { friend: match.id } }
+    );
+    await usersCollection.updateOne(
+        { _id: new ObjectId(match.id) },
+        { $set: { friend: userId } }
+    );
+
     return new Response(
         JSON.stringify({
-            users: usersWithSharedGoals,
+            match,
         })
     );
 };

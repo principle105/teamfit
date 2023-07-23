@@ -3,12 +3,16 @@ import type { RequestHandler } from "@sveltejs/kit";
 import { ObjectId } from "mongodb";
 import type { User } from "$lib/types";
 
+interface RequestParams {
+    userId: string;
+    goals: User["goals"];
+    firstName: string;
+    lastName: string;
+    description: string;
+}
+
 export const POST: RequestHandler = async ({ request }) => {
-    const {
-        userId,
-        goals,
-        description,
-    }: { userId: string; goals: User["goals"]; description: string } =
+    const { userId, goals, firstName, lastName, description }: RequestParams =
         await request.json();
 
     // TODO: do some validation here
@@ -17,7 +21,15 @@ export const POST: RequestHandler = async ({ request }) => {
 
     const user = await usersCollection.updateOne(
         { _id: new ObjectId(userId) },
-        { $set: { goals, description, surveyCompleted: true } }
+        {
+            $set: {
+                firstName,
+                lastName,
+                description,
+                goals,
+                surveyCompleted: true,
+            },
+        }
     );
 
     if (!user) {

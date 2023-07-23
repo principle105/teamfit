@@ -32,12 +32,12 @@
                 {#if user?.image}
                     <img
                         src={user.image}
-                        alt="{user.name}'s avatar"
+                        alt="{user.firstName}'s avatar"
                         class="w-10 h-10 rounded-full"
                     />
                 {/if}
                 <div class="font-medium text-[1.08rem] hidden sm:block">
-                    {user.name}
+                    {user.firstName}
                 </div>
                 <div class="h-5 w-5">
                     <IoIosArrowDown />
@@ -49,7 +49,7 @@
                     'opacity-0'} transition-opacity top-[calc(100%+0.8rem)] right-0 bg-white rounded-lg shadow-lg p-4"
             >
                 <a
-                    href="/dashboard"
+                    href="/"
                     class="block py-2 px-4 hover:bg-zinc-100 rounded-lg"
                 >
                     Dashboard
@@ -60,13 +60,12 @@
                 >
                     Profile
                 </a>
-                <a
-                    href="/auth/signin"
+                <button
                     class="block py-2 px-4 hover:bg-zinc-100 rounded-lg"
                     on:click={signOut}
                 >
                     Sign out
-                </a>
+                </button>
             </div>
         </div>
     {:else}

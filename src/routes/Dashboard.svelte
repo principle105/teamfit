@@ -1,11 +1,29 @@
 <script lang="ts">
+    import { onMount } from "svelte";
     import type { User } from "$lib/types";
+    import toast from "svelte-french-toast";
 
     export let user: User;
+
+    onMount(async () => {
+        if (user.friend) return;
+
+        const res = await fetch(`/api/users/find-match?userId=${user.id}`);
+        const data = await res.json();
+
+        if (res.ok) {
+            user.friend = data.match;
+            toast.success("You have a new friend!");
+        } else {
+            toast.error(
+                "Sorry, no matches were found. Come back another time."
+            );
+        }
+    });
 </script>
 
 <h2>Dashboard</h2>
-<p>Welcome {user.name}</p>
+<p>Welcome {user.firstName} {user.lastName}</p>
 
 <form>
     <div
@@ -91,8 +109,9 @@
 </form>
 <p class="ml-auto text-xs text-gray-500 dark:text-gray-400">
     Remember, contributions to this topic should follow our <a
-        href="#"
+        href="/"
         class="text-blue-600 dark:text-blue-500 hover:underline"
-        >Community Guidelines</a
-    >.
+    >
+        Community Guidelines
+    </a>
 </p>

@@ -13,7 +13,8 @@ export const handle = SvelteKitAuth({
             profile: (profile) => {
                 return {
                     id: profile.id.toString(),
-                    name: profile.name,
+                    firstName: profile.name,
+                    lastName: null,
                     email: profile.email,
                     description: null,
                     image: profile.avatar_url,

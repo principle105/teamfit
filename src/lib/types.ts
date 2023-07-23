@@ -2,7 +2,8 @@ import type { ObjectId } from "mongodb";
 
 export interface User {
     id: string;
-    name: string | null;
+    firstName: string | null;
+    lastName: string | null;
     email: string | null;
     description: string | null;
     image: string;
@@ -16,5 +17,5 @@ export interface DatabaseUser extends User {
 }
 
 export interface Friend extends Omit<User, "email" | "friend"> {
-    matchingGoals: string[];
+    commonGoals: string[];
 }
