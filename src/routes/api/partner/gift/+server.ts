@@ -6,11 +6,12 @@ import { ObjectId } from "mongodb";
 interface RequestParams {
     userId: string;
     partnerId: string;
+    postIndex: number;
     badgeName: string;
 }
 
 export const POST: RequestHandler = async ({ request }) => {
-    const { userId, partnerId, badgeName }: RequestParams =
+    const { userId, partnerId, postIndex, badgeName }: RequestParams =
         await request.json();
 
     // TODO: do some validation here
@@ -60,12 +61,13 @@ export const POST: RequestHandler = async ({ request }) => {
         }
     );
 
-    // Adding the badge to the partner's badges array
-    const partnerUser = await usersCollection.updateOne(
+    // Adding the badge to the partner's badges and post
+    await usersCollection.updateOne(
         { _id: new ObjectId(partnerId) },
         {
             $push: {
                 badges: badgeName,
+                [`posts.${postIndex}.badges`]: badgeName,
             },
         }
     );

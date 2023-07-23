@@ -43,6 +43,8 @@ export const GET: RequestHandler = async ({ url: { searchParams } }) => {
         goals: partnerUser.goals,
         posts: partnerUser.posts,
         commonGoals: [],
+        points: partnerUser.points,
+        badges: partnerUser.badges,
     } satisfies Friend;
 
     return new Response(JSON.stringify({ partner }));

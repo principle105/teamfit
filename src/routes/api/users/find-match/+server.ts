@@ -54,6 +54,8 @@ export const GET: RequestHandler = async ({ url: { searchParams } }) => {
                 goals: user.goals,
                 commonGoals: commonGoals,
                 posts: user.posts,
+                points: user.points,
+                badges: user.badges,
             } satisfies Friend;
         }
 

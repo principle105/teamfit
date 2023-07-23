@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { invalidateAll } from "$app/navigation";
     import { surveyQuestions } from "$lib/data";
     import type { User } from "$lib/types";
     import toast from "svelte-french-toast";
@@ -96,9 +95,11 @@
 
 {#if surveySection === 0}
     <div class="absolute inset-0 h-screen w-screen flex flex-col">
-        <div class="text-center max-w-screen-md m-auto">
-            <h2 class="text-6xl font-semibold mb-4">Questionnaire</h2>
-            <p class="text-zinc-600 mb-6">
+        <div class="text-center max-w-screen-md m-auto px-2">
+            <h2 class="text-5xl md:text-7xl font-semibold mb-4">
+                Questionnaire
+            </h2>
+            <p class="text-zinc-600 mb-6 md:text-lg">
                 We don't know enough yet to match you with your fitness partner.
                 Help us learn more about you by completing this questionnaire.
             </p>
@@ -196,36 +197,36 @@
 {:else if surveySection === 2}
     <div class="max-w-screen-md mx-auto">
         <h2 class="text-5xl text-center">Additional Information</h2>
-        <p class="text-red-600 mt-10 mb-3">
+        <p class="text-red-600 mt-6 md:mt-10 mb-3">
             Disclaimer: This information will be available to other users who
             you are matched with.
         </p>
         <div class="flex gap-3 mb-3">
             <div class="w-full">
                 <label
-                    for="default-input"
-                    class="block mb-2 text-sm font-medium text-gray-900"
+                    for="first-name"
+                    class="block mb-2 text-sm font-medium text-zinc-900"
                 >
                     First Name
                 </label>
                 <input
                     type="text"
-                    id="default-input"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 outline-none"
+                    id="first-name"
+                    class="bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-lg block w-full p-2.5 outline-none"
                     bind:value={firstNameInput}
                 />
             </div>
             <div class="w-full">
                 <label
-                    for="default-input"
-                    class="block mb-2 text-sm font-medium text-gray-900"
+                    for="last-name"
+                    class="block mb-2 text-sm font-medium text-zinc-900"
                 >
                     Last Name
                 </label>
                 <input
                     type="text"
-                    id="default-input"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 outline-none"
+                    id="last-name"
+                    class="bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-lg block w-full p-2.5 outline-none"
                     bind:value={lastNameInput}
                 />
             </div>
@@ -233,14 +234,14 @@
 
         <label
             for="message"
-            class="block mb-2 text-sm font-medium text-gray-900"
+            class="block mb-2 text-sm font-medium text-zinc-900"
         >
             Description
         </label>
         <textarea
             id="message"
             rows="4"
-            class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 outline-none"
+            class="block p-2.5 w-full text-sm text-zinc-900 bg-zinc-50 rounded-lg border border-zinc-300 outline-none"
             placeholder="Write your thoughts here..."
             bind:value={descriptionInput}
         />

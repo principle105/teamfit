@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import type { Post, User, Friend } from "$lib/types";
+    import type { Post, User, Friend, Reply } from "$lib/types";
     import toast from "svelte-french-toast";
     import TextEditor from "./TextEditor.svelte";
     import type Quill from "quill";
@@ -25,7 +25,7 @@
 
             if (res.ok) {
                 user.friend = data.match;
-                toast.success("You have a new friend!");
+                toast.success("You have a new fitness partner!");
             } else {
                 toast.error(
                     "Sorry, no matches were found. Come back another time."
@@ -50,21 +50,28 @@
             friend = friendData.partner;
         } else {
             toast.error(
-                "Failed to get your friend's data. Please try again later."
+                "Failed to get your fitness partner's data. Please try again later."
             );
         }
     };
 
     let editor: Quill;
+    let replyEditor: Quill;
 
     const postProgressUpdate = async () => {
         const content = editor.getContents();
+
+        if (content.length() === 1) {
+            toast.error("Please write something before posting");
+            return;
+        }
 
         const post: Post = {
             userId: user.id,
             content,
             date: Date.now(),
             replies: [],
+            badges: [],
         };
 
         const postResponse = await fetch(`/api/posts/create`, {
@@ -79,6 +86,7 @@
             toast.error("Results could not be saved");
         } else {
             user.posts = [...user.posts, post];
+            user.points += 5;
             toast.success("Post created!");
 
             // Clearing the editor
@@ -141,6 +149,11 @@
     };
 
     const giftBadge = async (badgeName: string) => {
+        // Get the post index on the friend's feed
+        const postIndex = friend!.posts.findIndex(
+            (p) => p.date === posts[openGiftPrompt!].date
+        );
+
         const response = await fetch(`/api/partner/gift`, {
             method: "POST",
             headers: {
@@ -150,6 +163,7 @@
                 userId: user.id,
                 partnerId: user.friend,
                 badgeName,
+                postIndex,
             }),
         });
 
@@ -169,15 +183,49 @@
     let badgeSelected: string | null = null;
 
     $: user.badges, (badgeInfo = sortBadges());
+
+    const postReply = async () => {
+        // Get the post index on the friend's feed
+        const postIndex = friend!.posts.findIndex(
+            (p) => p.date === posts[openReplyPrompt!].date
+        );
+
+        const content = replyEditor.getContents();
+
+        const response = await fetch(`/api/posts/reply`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                userId: user.id,
+                partnerId: user.friend,
+                postIndex,
+                content,
+                date: Date.now(),
+            }),
+        });
+
+        if (response.ok) {
+            toast.success("Reply posted!");
+            replyEditor.setContents([] as any);
+            openReplyPrompt = null;
+            getFriendData();
+        } else {
+            toast.error("Failed to post reply");
+        }
+    };
 </script>
 
-<h2 class="text-5xl">Dashboard</h2>
-<p class="mt-3 text-zinc-600">Earn points when you post a progress update.</p>
+<h2 class="text-4xl sm:text-5xl font-semibold mt-6">Dashboard</h2>
+<p class="mt-1.5 sm:mt-3 text-zinc-600">
+    Earn points when you post a progress update.
+</p>
 
 <div class="flex justify-between gap-10 mt-10 flex-col md:flex-row">
     <section class="grow order-last md:order-none">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-lg lg:text-2xl text-gray-900">Your Feed</h2>
+            <h2 class="text-lg lg:text-2xl text-zinc-900">Your Feed</h2>
         </div>
         <div class="mb-3">
             <TextEditor bind:quill={editor} />
@@ -198,13 +246,13 @@
             {@const author = user.id === post.userId ? user : friend}
             {#if author !== null}
                 <article
-                    class="p-6 mb-6 text-base bg-white rounded-lg {index !==
-                        0 && 'border-t border-gray-200'}"
+                    class="p-6 text-base bg-white rounded-lg {index !== 0 &&
+                        'border-t border-zinc-200'}"
                 >
                     <footer class="flex justify-between items-center mb-2">
                         <div class="flex items-center">
                             <p
-                                class="inline-flex items-center mr-3 text-sm text-gray-900"
+                                class="inline-flex items-center mr-3 text-sm text-zinc-900"
                             >
                                 <img
                                     class="mr-2 w-6 h-6 rounded-full"
@@ -213,16 +261,25 @@
                                 />{author.firstName}
                                 {author.lastName}
                             </p>
-                            <div class="text-sm text-gray-600">
+                            <div class="text-sm text-zinc-600">
                                 {new Date(post.date).toLocaleDateString()}
                             </div>
+                            <ul class="flex gap-2 ml-4">
+                                {#each post.badges as badgeName}
+                                    {@const badge = badges.find(
+                                        (b) => b.name === badgeName
+                                    )}
+                                    {#if badge !== undefined}
+                                        <li class="text-2xl">
+                                            {badge.icon}
+                                        </li>
+                                    {/if}
+                                {/each}
+                            </ul>
                         </div>
                         {#if user.id === post.userId}
                             <button
-                                id="dropdownComment1Button"
-                                data-dropdown-toggle="dropdownComment1"
-                                class="inline-flex items-center p-2 text-sm font-medium text-center text-gray-400 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-50"
-                                type="button"
+                                class="inline-flex items-center p-2 text-sm font-medium text-center text-zinc-400 bg-white rounded-lg hover:bg-zinc-100 focus:ring-4 focus:outline-none focus:ring-zinc-50"
                             >
                                 <svg
                                     class="w-5 h-5"
@@ -237,50 +294,19 @@
                                 </svg>
                                 <span class="sr-only">Comment settings</span>
                             </button>
-                            <!-- Dropdown menu -->
-                            <div
-                                id="dropdownComment1"
-                                class="hidden z-10 w-36 bg-white rounded divide-y divide-gray-100 shadow"
-                            >
-                                <ul
-                                    class="py-1 text-sm text-gray-700"
-                                    aria-labelledby="dropdownMenuIconHorizontalButton"
-                                >
-                                    <li>
-                                        <a
-                                            href="#"
-                                            class="block py-2 px-4 hover:bg-gray-100"
-                                            >Edit</a
-                                        >
-                                    </li>
-                                    <li>
-                                        <a
-                                            href="#"
-                                            class="block py-2 px-4 hover:bg-gray-100"
-                                            >Remove</a
-                                        >
-                                    </li>
-                                    <li>
-                                        <a
-                                            href="#"
-                                            class="block py-2 px-4 hover:bg-gray-100"
-                                            >Report</a
-                                        >
-                                    </li>
-                                </ul>
-                            </div>
                         {/if}
                     </footer>
                     <TextEditor content={post.content} />
                     {#if user.id !== post.userId}
                         <div class="flex items-center mt-4 space-x-4 relative">
                             <button
-                                class="flex items-center text-sm text-gray-500 hover:underline"
+                                class="flex items-center text-sm text-zinc-500 hover:underline"
                                 on:click={() => {
                                     if (openReplyPrompt === index) {
                                         openReplyPrompt = null;
                                     } else {
                                         openReplyPrompt = index;
+                                        openGiftPrompt = null;
                                     }
                                 }}
                             >
@@ -343,8 +369,9 @@
                                                         {badge.name}
                                                     </div>
                                                     <div
-                                                        class="text-xs text-zinc-500 {canAffordBadge ||
-                                                            'text-red-500'}"
+                                                        class="text-xs {!canAffordBadge
+                                                            ? 'text-red-500'
+                                                            : 'text-zinc-500'}"
                                                     >
                                                         {badge.price} points
                                                     </div>
@@ -354,7 +381,7 @@
                                     </div>
                                     {#if badgeSelected !== null}
                                         <button
-                                            class="mt-4 inline-flex items-center py-2.5 px-4 text-sm font-medium text-center text-white bg-blue-700 rounded-lg focus:ring-4 focus:ring-blue-200 hover:bg-blue-800 mb-4"
+                                            class="mt-4 inline-flex items-center py-2.5 px-4 text-sm font-medium text-center text-white bg-blue-700 rounded-lg focus:ring-4 focus:ring-blue-200 hover:bg-blue-800"
                                             on:click={async () => {
                                                 if (badgeSelected !== null) {
                                                     await giftBadge(
@@ -369,12 +396,13 @@
                                 </div>
                             {/if}
                             <button
-                                class="flex items-center text-sm text-gray-500 hover:underline gap-0.5"
+                                class="flex items-center text-sm text-zinc-500 hover:underline gap-0.5"
                                 on:click={() => {
                                     if (openGiftPrompt === index) {
                                         openGiftPrompt = null;
                                     } else {
                                         openGiftPrompt = index;
+                                        openReplyPrompt = null;
                                     }
                                 }}
                             >
@@ -386,6 +414,78 @@
                         </div>
                     {/if}
                 </article>
+
+                {#if openReplyPrompt === index}
+                    <div
+                        class="p-6 ml-6 lg:ml-12 text-base bg-white rounded-lg"
+                    >
+                        <div class="mb-3">
+                            <TextEditor
+                                placeholder="Write your reply here..."
+                                bind:quill={replyEditor}
+                            />
+                        </div>
+                        <button
+                            class="inline-flex items-center py-2.5 px-4 text-sm font-medium text-center text-white bg-blue-700 rounded-lg focus:ring-4 focus:ring-blue-200 hover:bg-blue-800 mb-4"
+                            on:click={async () => await postReply()}
+                        >
+                            Post Reply
+                        </button>
+                    </div>
+                {/if}
+
+                {#each post.replies as reply}
+                    {@const replyAuthor =
+                        user.id === reply.userId ? user : friend}
+                    {#if replyAuthor !== null}
+                        <article
+                            class="p-6 ml-6 lg:ml-12 text-base bg-white rounded-lg"
+                        >
+                            <footer
+                                class="flex justify-between items-center mb-2"
+                            >
+                                <div class="flex items-center">
+                                    <p
+                                        class="inline-flex items-center mr-3 text-sm text-zinc-900"
+                                    >
+                                        <img
+                                            class="mr-2 w-6 h-6 rounded-full"
+                                            src={replyAuthor.image}
+                                            alt="{replyAuthor.firstName}'s Profile"
+                                        />{replyAuthor.firstName}
+                                        {replyAuthor.lastName}
+                                    </p>
+                                    <div class="text-sm text-gray-600">
+                                        {new Date(
+                                            reply.date
+                                        ).toLocaleDateString()}
+                                    </div>
+                                </div>
+                                {#if user.id === reply.userId}
+                                    <button
+                                        class="inline-flex items-center p-2 text-sm font-medium text-center text-zinc-400 bg-white rounded-lg hover:bg-zinc-100 focus:ring-4 focus:outline-none focus:ring-zinc-50"
+                                    >
+                                        <svg
+                                            class="w-5 h-5"
+                                            aria-hidden="true"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"
+                                            />
+                                        </svg>
+                                        <span class="sr-only"
+                                            >Comment settings</span
+                                        >
+                                    </button>
+                                {/if}
+                            </footer>
+                            <TextEditor content={post.content} />
+                        </article>
+                    {/if}
+                {/each}
             {/if}
         {/each}
     </section>
@@ -416,7 +516,7 @@
             <div>
                 <p class="font-medium text-sm mb-1">Badges Received</p>
                 {#if badgeInfo.length === 0}
-                    <p class="text-sm text-gray-500">
+                    <p class="text-sm text-zinc-500">
                         You have not received any badges yet
                     </p>
                 {:else}

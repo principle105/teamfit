@@ -8,6 +8,7 @@ export interface Reply {
 
 export interface Post extends Reply {
     replies: Reply[];
+    badges: string[];
 }
 
 export interface User {

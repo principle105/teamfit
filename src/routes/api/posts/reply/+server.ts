@@ -1,36 +1,40 @@
 import clientPromise from "$lib/mongodb";
 import type { RequestHandler } from "@sveltejs/kit";
 import { ObjectId } from "mongodb";
-import type { Reply, Post } from "$lib/types";
+import type { Reply } from "$lib/types";
+
+interface ReplyParams {
+    userId: string;
+    partnerId: string;
+    date: number;
+    postIndex: number;
+    content: any;
+}
 
 export const POST: RequestHandler = async ({ request }) => {
-    const { userId, content, date }: Reply = await request.json();
+    const { userId, partnerId, postIndex, date, content }: ReplyParams =
+        await request.json();
 
     // TODO: do some validation here
 
     const usersCollection = (await clientPromise).db().collection("users");
 
-    const post: Post = {
+    const reply: Reply = {
         userId,
         content,
-        date,
-        replies: [],
-        badges: [],
+        date: Date.now(),
     };
 
-    const user = await usersCollection.updateOne(
-        { _id: new ObjectId(userId) },
+    const partnerUser = await usersCollection.updateOne(
+        { _id: new ObjectId(partnerId) },
         {
             $push: {
-                posts: post,
-            },
-            $inc: {
-                points: 5,
+                [`posts.${postIndex}.replies`]: reply,
             },
         }
     );
 
-    if (!user) {
+    if (!partnerUser) {
         return new Response(
             JSON.stringify({
                 status: 404,
@@ -42,7 +46,7 @@ export const POST: RequestHandler = async ({ request }) => {
     return new Response(
         JSON.stringify({
             status: 200,
-            body: post,
+            body: "Reply posted!",
         })
     );
 };

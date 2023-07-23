@@ -13,6 +13,7 @@
 
     export let quill: Quill | null = null;
     export let content: any = null;
+    export let placeholder: string = "Write about your progress here...";
 
     $: content, quill?.setContents(content);
 
@@ -24,7 +25,7 @@
                 toolbar: content !== null ? false : toolbarOptions,
             },
             theme: "snow",
-            placeholder: "Write about your progress here...",
+            placeholder,
             readOnly: content !== null,
         });
 
