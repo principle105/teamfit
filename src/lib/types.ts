@@ -1,5 +1,15 @@
 import type { ObjectId } from "mongodb";
 
+export interface Reply {
+    userId: string;
+    content: any;
+    date: number;
+}
+
+export interface Post extends Reply {
+    replies: Reply[];
+}
+
 export interface User {
     id: string;
     firstName: string | null;
@@ -10,6 +20,7 @@ export interface User {
     goals: { [key: string]: number };
     friend: string | null;
     surveyCompleted: boolean;
+    posts: Post[];
 }
 
 export interface DatabaseUser extends User {

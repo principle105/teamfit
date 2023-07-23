@@ -1,33 +1,27 @@
 import clientPromise from "$lib/mongodb";
 import type { RequestHandler } from "@sveltejs/kit";
 import { ObjectId } from "mongodb";
-import type { User } from "$lib/types";
-
-interface RequestParams {
-    userId: string;
-    goals: User["goals"];
-    firstName: string;
-    lastName: string;
-    description: string;
-}
+import type { Reply, Post } from "$lib/types";
 
 export const POST: RequestHandler = async ({ request }) => {
-    const { userId, goals, firstName, lastName, description }: RequestParams =
-        await request.json();
+    const { userId, content, date }: Reply = await request.json();
 
     // TODO: do some validation here
 
     const usersCollection = (await clientPromise).db().collection("users");
 
+    const post: Post = {
+        userId,
+        content,
+        date,
+        replies: [],
+    };
+
     const user = await usersCollection.updateOne(
         { _id: new ObjectId(userId) },
         {
-            $set: {
-                firstName: firstName,
-                lastName: lastName,
-                description: description,
-                goals: goals,
-                surveyCompleted: true,
+            $push: {
+                posts: post,
             },
         }
     );
@@ -44,7 +38,7 @@ export const POST: RequestHandler = async ({ request }) => {
     return new Response(
         JSON.stringify({
             status: 200,
-            body: "User updated!",
+            body: post,
         })
     );
 };

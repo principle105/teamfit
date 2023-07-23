@@ -21,6 +21,7 @@ export const handle = SvelteKitAuth({
                     goals: {},
                     friend: null,
                     surveyCompleted: false,
+                    posts: [],
                 } satisfies User;
             },
         }),
