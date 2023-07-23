@@ -100,7 +100,7 @@ export const GET: RequestHandler = async ({ url: { searchParams } }) => {
 
     return new Response(
         JSON.stringify({
-            match,
+            match: match.id,
         })
     );
 };

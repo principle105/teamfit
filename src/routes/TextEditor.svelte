@@ -1,6 +1,6 @@
 <script lang="ts">
     import type Quill from "quill";
-    import { onMount } from "svelte";
+    import { onMount, onDestroy } from "svelte";
 
     let editor: HTMLElement;
 
@@ -13,6 +13,8 @@
 
     export let quill: Quill | null = null;
     export let content: any = null;
+
+    $: content, quill?.setContents(content);
 
     onMount(async () => {
         const { default: Quill } = await import("quill");
