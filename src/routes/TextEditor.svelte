@@ -32,7 +32,7 @@
     });
 </script>
 
-<div class="editor-wrapper">
+<div class={content !== null ? "readonly" : ""}>
     <div bind:this={editor} />
 </div>
 
@@ -42,5 +42,9 @@
     :global(.ql-editor) {
         font-family: "Poppins", sans-serif;
         font-size: larger;
+    }
+
+    :global(.readonly .ql-container.ql-snow) {
+        border: none;
     }
 </style>

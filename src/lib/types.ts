@@ -27,6 +27,7 @@ export interface DatabaseUser extends User {
     _id: ObjectId;
 }
 
-export interface Friend extends Omit<User, "email" | "friend"> {
+export interface Friend
+    extends Omit<User, "email" | "friend" | "surveyCompleted"> {
     commonGoals: string[];
 }

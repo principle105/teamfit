@@ -10,33 +10,36 @@
     let friend: Friend;
 
     onMount(async () => {
-        if (user.friend) return;
+        if (user.friend === null) {
+            const res = await fetch(`/api/users/find-match?userId=${user.id}`);
+            const data = await res.json();
 
-        const res = await fetch(`/api/users/find-match?userId=${user.id}`);
-        const data = await res.json();
-
-        if (res.ok) {
-            user.friend = data.match;
-            toast.success("You have a new friend!");
-        } else {
-            toast.error(
-                "Sorry, no matches were found. Come back another time."
-            );
+            if (res.ok) {
+                user.friend = data.match;
+                toast.success("You have a new friend!");
+            } else {
+                toast.error(
+                    "Sorry, no matches were found. Come back another time."
+                );
+            }
         }
 
-        // Getting the friend's data
-        // const friendRes = await fetch(
-        //     `/api/partner/get-data?userId=${user.friend}`
-        // );
-        // const friendData = await friendRes.json();
+        if (user.friend === null) return;
 
-        // if (friendRes.ok) {
-        //     friend = friendData;
-        // } else {
-        //     toast.error(
-        //         "Failed to get your friend's data. Please try again later."
-        //     );
-        // }
+        // Getting the friend's data
+        const friendRes = await fetch(
+            `/api/partner/get-data?partnerId=${user.friend}`
+        );
+
+        const friendData = await friendRes.json();
+
+        if (friendRes.ok) {
+            friend = friendData;
+        } else {
+            toast.error(
+                "Failed to get your friend's data. Please try again later."
+            );
+        }
     });
 
     let editor: Quill;
@@ -65,6 +68,9 @@
             user.posts.push(post);
             user = user;
             toast.success("Post created!");
+
+            // Clearing the editor
+            editor.setContents([] as any);
         }
     };
 </script>
@@ -78,7 +84,9 @@
 <div class="flex justify-between gap-10">
     <section class="bg-white py-8 lg:py-16 grow">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-lg lg:text-2xl text-gray-900">Progress Reports</h2>
+            <h2 class="text-lg lg:text-2xl text-gray-900">
+                Progress Reports ({user.posts.length})
+            </h2>
         </div>
         <div class="mb-3">
             <TextEditor bind:quill={editor} />

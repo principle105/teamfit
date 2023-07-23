@@ -53,7 +53,8 @@ export const GET: RequestHandler = async ({ url: { searchParams } }) => {
                 image: user.image,
                 goals: user.goals,
                 commonGoals: commonGoals,
-            } as Friend;
+                posts: user.posts,
+            } satisfies Friend;
         }
 
         return null;
