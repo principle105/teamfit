@@ -140,10 +140,39 @@
         return badgeInfo as BadgeInfo[];
     };
 
+    const giftBadge = async (badgeName: string) => {
+        const response = await fetch(`/api/partner/gift`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                userId: user.id,
+                partnerId: user.friend,
+                badgeName,
+            }),
+        });
+
+        if (response.ok) {
+            toast.success("Badge gifted!");
+            badgeSelected = null;
+            openGiftPrompt = null;
+            user.points -= badges.find((b) => b.name === badgeName)!.price;
+            getFriendData();
+        } else {
+            toast.error("Failed to gift badge");
+        }
+    };
+
+    let openReplyPrompt: number | null = null;
+    let openGiftPrompt: number | null = null;
+    let badgeSelected: string | null = null;
+
     $: user.badges, (badgeInfo = sortBadges());
 </script>
 
 <h2 class="text-5xl">Dashboard</h2>
+<p class="mt-3 text-zinc-600">Earn points when you post a progress update.</p>
 
 <div class="flex justify-between gap-10 mt-10 flex-col md:flex-row">
     <section class="grow order-last md:order-none">
@@ -243,37 +272,119 @@
                         {/if}
                     </footer>
                     <TextEditor content={post.content} />
-                    <div class="flex items-center mt-4 space-x-4">
-                        <button
-                            type="button"
-                            class="flex items-center text-sm text-gray-500 hover:underline"
-                        >
-                            <svg
-                                aria-hidden="true"
-                                class="mr-1 w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                                ><path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                                /></svg
+                    {#if user.id !== post.userId}
+                        <div class="flex items-center mt-4 space-x-4 relative">
+                            <button
+                                class="flex items-center text-sm text-gray-500 hover:underline"
+                                on:click={() => {
+                                    if (openReplyPrompt === index) {
+                                        openReplyPrompt = null;
+                                    } else {
+                                        openReplyPrompt = index;
+                                    }
+                                }}
                             >
-                            Reply
-                        </button>
-                        <button
-                            type="button"
-                            class="flex items-center text-sm text-gray-500 hover:underline gap-0.5"
-                        >
-                            <div class="h-4 w-4 mb-1">
-                                <IoIosGift />
-                            </div>
-                            Gift Badge
-                        </button>
-                    </div>
+                                <svg
+                                    aria-hidden="true"
+                                    class="mr-1 w-4 h-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    ><path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                                    /></svg
+                                >
+                                Reply
+                            </button>
+
+                            {#if openGiftPrompt === index}
+                                <div
+                                    class="absolute top-8 bg-zinc-50 border border-zinc-200 p-5 z-50"
+                                >
+                                    <h3 class="text-xl">
+                                        Select a Badge to Gift
+                                    </h3>
+                                    <p class="text-zinc-500 text-sm mb-4">
+                                        You have <bold class="font-bold"
+                                            >{user.points} Points</bold
+                                        >
+                                    </p>
+                                    <div
+                                        class="grid grid-cols-2 lg:grid-cols-4"
+                                    >
+                                        {#each badges as badge}
+                                            {@const canAffordBadge =
+                                                user.points >= badge.price}
+                                            <button
+                                                class="text-sm flex gap-2 {badgeSelected ===
+                                                    badge.name &&
+                                                    'bg-zinc-100'} p-3 rounded-md {canAffordBadge
+                                                    ? 'hover:bg-zinc-100'
+                                                    : 'cursor-default'} items-center"
+                                                on:click={() => {
+                                                    if (canAffordBadge) {
+                                                        badgeSelected =
+                                                            badge.name;
+                                                    }
+                                                }}
+                                            >
+                                                <div class="text-xl mr-1">
+                                                    {badge.icon}
+                                                </div>
+
+                                                <div>
+                                                    <div
+                                                        class="hidden md:block"
+                                                    >
+                                                        {badge.name}
+                                                    </div>
+                                                    <div
+                                                        class="text-xs text-zinc-500 {canAffordBadge ||
+                                                            'text-red-500'}"
+                                                    >
+                                                        {badge.price} points
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        {/each}
+                                    </div>
+                                    {#if badgeSelected !== null}
+                                        <button
+                                            class="mt-4 inline-flex items-center py-2.5 px-4 text-sm font-medium text-center text-white bg-blue-700 rounded-lg focus:ring-4 focus:ring-blue-200 hover:bg-blue-800 mb-4"
+                                            on:click={async () => {
+                                                if (badgeSelected !== null) {
+                                                    await giftBadge(
+                                                        badgeSelected
+                                                    );
+                                                }
+                                            }}
+                                        >
+                                            Gift Badge
+                                        </button>
+                                    {/if}
+                                </div>
+                            {/if}
+                            <button
+                                class="flex items-center text-sm text-gray-500 hover:underline gap-0.5"
+                                on:click={() => {
+                                    if (openGiftPrompt === index) {
+                                        openGiftPrompt = null;
+                                    } else {
+                                        openGiftPrompt = index;
+                                    }
+                                }}
+                            >
+                                <div class="h-4 w-4 mb-1">
+                                    <IoIosGift />
+                                </div>
+                                Gift Badge
+                            </button>
+                        </div>
+                    {/if}
                 </article>
             {/if}
         {/each}

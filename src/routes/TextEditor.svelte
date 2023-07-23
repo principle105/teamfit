@@ -24,7 +24,7 @@
                 toolbar: content !== null ? false : toolbarOptions,
             },
             theme: "snow",
-            placeholder: "Write about your workout or progress here...",
+            placeholder: "Write about your progress here...",
             readOnly: content !== null,
         });
 

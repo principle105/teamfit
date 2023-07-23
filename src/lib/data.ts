@@ -93,46 +93,26 @@ export const badges: Badge[] = [
     {
         name: "Trophy",
         icon: "🏆",
-        price: 20,
-    },
-    {
-        name: "Superhero Cape",
-        icon: "🦸‍♂️",
-        price: 25,
+        price: 30,
     },
     {
         name: "Diamond",
         icon: "💎",
-        price: 30,
+        price: 50,
     },
     {
         name: "Rainbow",
         icon: "🌈",
-        price: 35,
-    },
-    {
-        name: "Angel Wings",
-        icon: "👼",
-        price: 40,
-    },
-    {
-        name: "Crown",
-        icon: "👑",
-        price: 45,
+        price: 100,
     },
     {
         name: "Rocket",
         icon: "🚀",
-        price: 50,
-    },
-    {
-        name: "Crystal Ball",
-        icon: "🔮",
-        price: 55,
+        price: 200,
     },
     {
         name: "Dragon",
         icon: "🐉",
-        price: 60,
+        price: 500,
     },
 ];

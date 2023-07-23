@@ -5,7 +5,6 @@ import { ObjectId } from "mongodb";
 interface RequestParams {
     userId: string;
     partnerId: string;
-    message: string;
 }
 
 export const POST: RequestHandler = async ({ request }) => {
