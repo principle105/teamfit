@@ -4,6 +4,7 @@ interface Question {
     options: string[];
 }
 
+// TODO: Add actual questions
 export const surveyQuestions: Question[] = [
     {
         shortName: "Goals",

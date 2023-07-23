@@ -4,14 +4,20 @@ import { ObjectId } from "mongodb";
 import type { User } from "$lib/types";
 
 export const POST: RequestHandler = async ({ request }) => {
-    const { userId, newData }: { userId: string; newData: Partial<User> } =
+    const {
+        userId,
+        goals,
+        description,
+    }: { userId: string; goals: User["goals"]; description: string } =
         await request.json();
+
+    // TODO: do some validation here
 
     const usersCollection = (await clientPromise).db().collection("users");
 
     const user = await usersCollection.updateOne(
         { _id: new ObjectId(userId) },
-        { $set: newData }
+        { $set: { goals, description, surveyCompleted: true } }
     );
 
     if (!user) {

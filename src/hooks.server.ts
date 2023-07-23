@@ -15,9 +15,11 @@ export const handle = SvelteKitAuth({
                     id: profile.id.toString(),
                     name: profile.name,
                     email: profile.email,
+                    description: null,
                     image: profile.avatar_url,
                     goals: {},
                     friend: null,
+                    surveyCompleted: false,
                 } satisfies User;
             },
         }),

@@ -27,13 +27,13 @@ export const GET: RequestHandler = async ({ url: { searchParams } }) => {
     const users = await usersCollection
         .find({
             friend: null,
-            goals: { $exists: true, $ne: {} },
+            goals: { $ne: {} },
             _id: { $ne: new ObjectId(userId) },
         })
         .toArray();
 
     // Filter the users that share at least one goal with the current user
-    const usersWithSharedGoals = users.map((user) => {
+    let usersWithSharedGoals = users.map((user) => {
         user = user as DatabaseUser;
 
         let matchingGoals: string[] = [];
@@ -58,7 +58,31 @@ export const GET: RequestHandler = async ({ url: { searchParams } }) => {
     });
 
     // Removing null values
-    usersWithSharedGoals.filter((user) => user !== null);
+    usersWithSharedGoals = usersWithSharedGoals.filter((user) => user !== null);
+
+    // Ordering by most matches
+    let sortedUsers = (usersWithSharedGoals as Friend[]).sort((a, b) => {
+        if (a.matchingGoals.length > b.matchingGoals.length) {
+            return -1;
+        }
+        if (a.matchingGoals.length < b.matchingGoals.length) {
+            return 1;
+        }
+        return 0;
+    });
+
+    // Getting the top 6 users
+
+    if (usersWithSharedGoals.length === 0) {
+        return new Response(
+            JSON.stringify({
+                error: "No users were found",
+            }),
+            {
+                status: 400,
+            }
+        );
+    }
 
     return new Response(
         JSON.stringify({

@@ -4,9 +4,11 @@ export interface User {
     id: string;
     name: string | null;
     email: string | null;
+    description: string | null;
     image: string;
     goals: { [key: string]: number };
     friend: string | null;
+    surveyCompleted: boolean;
 }
 
 export interface DatabaseUser extends User {

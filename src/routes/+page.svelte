@@ -1,6 +1,5 @@
 <script lang="ts">
     import { page } from "$app/stores";
-    import { surveyQuestions } from "$lib/surveyQuestions";
     import type { User } from "$lib/types";
 
     import Survey from "./Survey.svelte";
@@ -12,7 +11,7 @@
 </script>
 
 {#if user}
-    {#if Object.keys(user.goals).length === surveyQuestions.length}
+    {#if user.surveyCompleted}
         {#if !user.friend}
             <ChooseFriend bind:user />
         {:else}
