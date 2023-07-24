@@ -217,6 +217,16 @@
             toast.error("Failed to post reply");
         }
     };
+
+    const formatUnixTime = (unixTime: number): string => {
+        return new Date(unixTime).toLocaleDateString("en-US", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+            hour: "numeric",
+            minute: "numeric",
+        });
+    };
 </script>
 
 <h2 class="text-4xl sm:text-5xl font-semibold mt-6">Dashboard</h2>
@@ -264,7 +274,7 @@
                                 {author.lastName}
                             </p>
                             <div class="text-sm text-zinc-600">
-                                {new Date(post.date).toLocaleDateString()}
+                                {formatUnixTime(post.date)}
                             </div>
                             <ul class="flex gap-2 ml-4">
                                 {#each post.badges as badgeName}
@@ -458,9 +468,7 @@
                                         {replyAuthor.lastName}
                                     </p>
                                     <div class="text-sm text-gray-600">
-                                        {new Date(
-                                            reply.date
-                                        ).toLocaleDateString()}
+                                        {formatUnixTime(reply.date)}
                                     </div>
                                 </div>
                                 {#if user.id === reply.userId}
