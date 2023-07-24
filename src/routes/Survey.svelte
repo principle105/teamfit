@@ -73,9 +73,9 @@
             body: JSON.stringify({
                 userId: user.id,
                 goals: user.goals,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                description: user.description,
+                firstName: firstNameInput,
+                lastName: lastNameInput,
+                description: descriptionInput,
                 headers: {
                     "content-type": "application/json",
                 },
