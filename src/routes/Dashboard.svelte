@@ -56,7 +56,7 @@
     };
 
     let editor: Quill;
-    let replyEditor: Quill;
+    let replyEditor: Quill | null = null;
 
     const postProgressUpdate = async () => {
         const content = editor.getContents();
@@ -185,6 +185,8 @@
     $: user.badges, (badgeInfo = sortBadges());
 
     const postReply = async () => {
+        if (replyEditor === null) return;
+
         // Get the post index on the friend's feed
         const postIndex = friend!.posts.findIndex(
             (p) => p.date === posts[openReplyPrompt!].date
@@ -208,8 +210,8 @@
 
         if (response.ok) {
             toast.success("Reply posted!");
-            replyEditor.setContents([] as any);
             openReplyPrompt = null;
+            replyEditor = null;
             getFriendData();
         } else {
             toast.error("Failed to post reply");
@@ -482,7 +484,7 @@
                                     </button>
                                 {/if}
                             </footer>
-                            <TextEditor content={post.content} />
+                            <TextEditor content={reply.content} />
                         </article>
                     {/if}
                 {/each}

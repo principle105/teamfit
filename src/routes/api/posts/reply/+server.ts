@@ -22,7 +22,7 @@ export const POST: RequestHandler = async ({ request }) => {
     const reply: Reply = {
         userId,
         content,
-        date: Date.now(),
+        date,
     };
 
     const partnerUser = await usersCollection.updateOne(
